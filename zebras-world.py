@@ -43,9 +43,10 @@ class ZebraWorld(object):
                 nix, niy = self._move(ix, iy)
                 if not b[niy][nix]:
                     break
-                if self._a[niy][nix] == ' ':
+                if x != ' ' and self._a[niy][nix] == ' ':
                     self._a[niy][nix] = x
                     self._a[iy][ix] = ' '
+                    b[niy][nix] = False
                 elif x == 'z' and self._a[niy][nix] == 'L':
                     self._a[niy][nix] = 'Z'
                     self._a[iy][ix] = ' '
