@@ -1,4 +1,4 @@
-throwaway-programs
+crazy-ideas
 ==================
 
 playground for trying stuff
