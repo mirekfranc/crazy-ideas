@@ -33,6 +33,9 @@ class ZebraWorld(object):
             y = ymove
         return x, y
 
+    def clear(self):
+        self._a = [[self._populate() for i in xrange(self._x)] for i in xrange(self._y)]
+
     def update(self):
         b = [[True for i in xrange(self._x)] for i in xrange(self._y)]
         for iy, y in enumerate(self._a):
@@ -72,7 +75,7 @@ class ZebraWorld(object):
                     self._a[iy][ix] = choice(['L', 'L', 'L', ' '])
                     oix, oiy = self._move(nix, niy)
                     if self._a[oiy][oix] == ' ':
-                        self._a[oiy][oix] = choice(['L', 'L', 'L', ' ', ' ', ' ', ' '])
+                        self._a[oiy][oix] = choice(['L', ' '])
                         b[oiy][oix] = False
                 if randrange(10) == 0:
                     self._a[iy][ix] = ' '
@@ -129,7 +132,7 @@ def main():
             w.refresh()
             q = w.getch()
             if q == ord('r'):
-                z1 = ZebraWorld(wx-2, wy-2)
+                z1.clear()
             elif q == curses.KEY_RESIZE:
                 xx, yy = w.getmaxyx()
                 z1 = ZebraWorld(xx-2, yy-2)
