@@ -41,8 +41,8 @@ class ZebraWorld(object):
         for iy, y in enumerate(self._a):
             for ix, x in enumerate(y):
                 nix, niy = self._move(ix, iy)
-                if not b[niy][nix]:
-                    break
+                if not b[niy][nix] or iy == niy and ix == nix:
+                    continue
                 if x != ' ' and self._a[niy][nix] == ' ':
                     self._a[niy][nix] = x
                     self._a[iy][ix] = ' '
@@ -56,29 +56,29 @@ class ZebraWorld(object):
                     self._a[niy][nix] = 'Z'
                     b[niy][nix] = False
                 elif x == 'Z' and self._a[niy][nix] == 'z':
-                    self._a[iy][ix] = choice(['Z', ' ', ' ', ' ', 'z'])
+                    self._a[iy][ix] = choice(['Z', ' ', ' ', 'z', 'z'])
                     self._a[niy][nix] = 'Z'
                     b[niy][nix] = False
                 elif x == 'z' and self._a[niy][nix] == 'Z':
-                    self._a[iy][ix] = choice(['Z', ' ', ' ', ' ', 'z'])
+                    self._a[iy][ix] = choice(['Z', ' ', ' ', 'z', 'z'])
                     self._a[niy][nix] = 'Z'
                     b[niy][nix] = False
                 elif x == 'Z' and self._a[niy][nix] == 'Z':
-                    self._a[iy][ix] = choice(['Z', 'Z', 'Z', ' ', 'z'])
+                    self._a[iy][ix] = choice(['Z', ' ', ' ', ' ', 'z'])
                     self._a[niy][nix] = 'Z'
                     b[niy][nix] = False
                 elif x == 'z' and self._a[niy][nix] == 'z':
                     oix, oiy = self._move(nix, niy)
                     if self._a[oiy][oix] == ' ':
-                        self._a[oiy][oix] = choice(['z', 'z', 'z', ' ', ' ', ' ', ' '])
+                        self._a[oiy][oix] = choice(['z', 'z', 'z', 'z', 'z', 'z', ' '])
                         b[oiy][oix] = False
                 elif x == 'L' and self._a[niy][nix] == 'L':
                     self._a[iy][ix] = choice(['L', 'L', 'L', ' '])
                     oix, oiy = self._move(nix, niy)
                     if self._a[oiy][oix] == ' ':
-                        self._a[oiy][oix] = choice(['L', ' '])
+                        self._a[oiy][oix] = choice(['L', 'L', 'L', ' '])
                         b[oiy][oix] = False
-                if randrange(10) == 0:
+                if randrange(15) == 0:
                     self._a[iy][ix] = ' '
 
     def __iter__(self):
