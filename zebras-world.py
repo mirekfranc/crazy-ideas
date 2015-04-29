@@ -7,7 +7,6 @@
 # The idea comes from Arjun Shankar (it's a pub idea :))
 
 
-from __future__ import print_function
 from random import choice, randrange
 import curses
 import time
