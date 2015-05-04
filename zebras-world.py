@@ -80,16 +80,10 @@ class ZebraWorld(object):
                 if randrange(15) == 0:
                     self._a[iy][ix] = ' '
 
-    def __iter__(self):
-        self._c = 0
-        return self
-
-    def next(self):
-        if self._c < self._y:
-            self._c += 1
-            return self._a[self._c-1]
-        else:
-            raise StopIteration()
+    def for_each_cell(self, f):
+        for x, line in enumerate(self._a, start=1):
+            for y, cell in enumerate(line, start=1):
+                f(y, x, cell)
 
 
 def main():
@@ -125,9 +119,7 @@ def main():
 
         while q != ord('q'):
             time.sleep(0.1)
-            for x, line in enumerate(z1, start=1):
-                for y, cell in enumerate(line, start=1):
-                    w.addstr(y, x, cell, curses.color_pair(colors[cell]))
+            z1.for_each_cell(lambda a, b, c: w.addstr(a, b, c, curses.color_pair(colors[c])))
             z1.update()
             w.refresh()
             q = w.getch()
