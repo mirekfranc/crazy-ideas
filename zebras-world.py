@@ -8,18 +8,29 @@
 
 
 from random import choice, randrange
+from time import sleep
+from sys import stderr
+from copy import deepcopy
 import curses
-import time
-import sys
 
 
-class ZebraWorld(object):
+class World(object):
     def __init__(self, x, y):
         self._a = [[self._populate() for i in xrange(x)] for i in xrange(y)]
         self._x = x
         self._y = y
         self._c = 0
 
+    def clear(self):
+        self._a = [[self._populate() for i in xrange(self._x)] for i in xrange(self._y)]
+
+    def for_each_cell(self, f):
+        for x, line in enumerate(self._a, start=1):
+            for y, cell in enumerate(line, start=1):
+                f(y, x, cell)
+
+
+class ZebraWorld(World):
     def _populate(self):
         return choice(['z', 'L'] + [' '] * 64)
 
@@ -31,9 +42,6 @@ class ZebraWorld(object):
         if ymove < self._y and ymove >= 0:
             y = ymove
         return x, y
-
-    def clear(self):
-        self._a = [[self._populate() for i in xrange(self._x)] for i in xrange(self._y)]
 
     def update(self):
         b = [[True for i in xrange(self._x)] for i in xrange(self._y)]
@@ -80,18 +88,45 @@ class ZebraWorld(object):
                 if randrange(15) == 0:
                     self._a[iy][ix] = ' '
 
-    def for_each_cell(self, f):
-        for x, line in enumerate(self._a, start=1):
-            for y, cell in enumerate(line, start=1):
-                f(y, x, cell)
+    def __str__(self):
+        return "Zebra's world"
+
+
+class GameOfLife(World):
+    def _populate(self):
+        return choice(['X'] * 8 + [' '] * 32)
+
+    def _be_born_or_die(self, ax, ay, b):
+        neighbours = 0
+        for xd, yd in [(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)]:
+            tx, ty = ax + xd, ay + yd
+            if b[self._y + ty if ty < 0 else ty % self._y][self._x + tx if tx < 0 else tx % self._x] == 'X':
+                neighbours += 1
+        return neighbours
+
+    def update(self):
+        b = deepcopy(self._a)
+        for iy, y in enumerate(b):
+            for ix, x in enumerate(y):
+                neighbours = self._be_born_or_die(ix, iy, b)
+                if neighbours < 2 or neighbours > 3:
+                    self._a[iy][ix] = ' '
+                elif neighbours == 3:
+                    self._a[iy][ix] = 'X'
+
+    def __str__(self):
+        return "Game of Life"
 
 
 def main():
+    worlds = [ZebraWorld, GameOfLife]
+    index = 0
+
     try:
-        def draw_border(w, xsize):
+        def draw_border(w, xsize, world):
             w.border()
-            w.addstr(0, 2, "Zebra's world")
-            w.addstr(xsize-1, 2, "(q)uit (r)efresh")
+            w.addstr(0, 2, str(world))
+            w.addstr(xsize-1, 2, "(q)uit (r)efresh (s)witch")
 
         w = curses.initscr()
 
@@ -108,27 +143,32 @@ def main():
 
         wx, wy = w.getmaxyx()
 
-        z1 = ZebraWorld(wx-2, wy-2)
+        z1 = worlds[index](wx-2, wy-2)
 
-        draw_border(w, wx)
+        draw_border(w, wx, z1)
         w.refresh()
 
-        colors = {'z': 1, 'L': 2, 'Z': 3, ' ': 4}
+        colors = {'z': 1, 'L': 2, 'Z': 3, ' ': 4, 'X': 1}
 
         q = w.getch()
 
         while q != ord('q'):
-            time.sleep(0.1)
+            sleep(0.1)
             z1.for_each_cell(lambda a, b, c: w.addstr(a, b, c, curses.color_pair(colors[c])))
             z1.update()
             w.refresh()
             q = w.getch()
             if q == ord('r'):
                 z1.clear()
+            if q == ord('s'):
+                index = (index + 1) % len(worlds)
+                xx, yy = w.getmaxyx()
+                z1 = worlds[index](xx-2, yy-2)
+                draw_border(w, xx, z1)
             elif q == curses.KEY_RESIZE:
                 xx, yy = w.getmaxyx()
-                z1 = ZebraWorld(xx-2, yy-2)
-                draw_border(w, xx)
+                z1 = worlds[index](xx-2, yy-2)
+                draw_border(w, xx, z1)
 
     finally:
         curses.endwin()
@@ -138,4 +178,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        sys.stderr.write("\nControl-C.  Let's call it quits.\n")
+        stderr.write("\nControl-C.  Let's call it quits.\n")
