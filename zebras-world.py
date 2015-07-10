@@ -96,7 +96,7 @@ class GameOfLife(World):
     def _populate(self):
         return choice(['X'] * 8 + [' '] * 32)
 
-    def _be_born_or_die(self, ax, ay, b):
+    def _count_neighbours(self, ax, ay, b):
         neighbours = 0
         for xd, yd in [(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)]:
             tx, ty = ax + xd, ay + yd
@@ -104,22 +104,36 @@ class GameOfLife(World):
                 neighbours += 1
         return neighbours
 
+    def _rule(self, x, y, n):
+        if n < 2 or n > 3:
+            self._a[y][x] = ' '
+        elif n == 3:
+            self._a[y][x] = 'X'
+
     def update(self):
         b = deepcopy(self._a)
         for iy, y in enumerate(b):
             for ix, x in enumerate(y):
-                neighbours = self._be_born_or_die(ix, iy, b)
-                if neighbours < 2 or neighbours > 3:
-                    self._a[iy][ix] = ' '
-                elif neighbours == 3:
-                    self._a[iy][ix] = 'X'
+                self._rule(ix, iy, self._count_neighbours(ix, iy, b))
 
     def __str__(self):
         return "Game of Life"
 
 
+class LifeWithoutDeath(GameOfLife):
+    def _populate(self):
+        return choice(['X'] + [' '] * 32)
+
+    def _rule(self, x, y, n):
+        if n == 3:
+            self._a[y][x] = 'X'
+
+    def __str__(self):
+        return "Life without Death"
+
+
 def main():
-    worlds = [ZebraWorld, GameOfLife]
+    worlds = [ZebraWorld, GameOfLife, LifeWithoutDeath]
     index = 0
 
     try:
